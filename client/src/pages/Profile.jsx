@@ -4,11 +4,12 @@ import { useSelector } from 'react-redux'
 export default function Profile() {
 const {currentUser} = useSelector((state) => state.user);
 
+
   return (
     <div className='w-lg p-3 mx-auto'>
       <h1 className=' text-3xl font-semibold text-center my-7'>Profile</h1>
       <form className='flex flex-col gap-y-3 '>
-      <img className='self-center rounded-full h-20 w-20 ' src={currentUser.avatar} alt="profile" />
+      <img className='self-center rounded-full h-20 w-20 ' src={currentUser.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} alt="profile" />
       <input className='bg-white p-3 rounded-md'  type="text" placeholder='Username' id="username" />
       <input className='bg-white p-3 rounded-md' type="email" placeholder='Email' id="email" />
       <input className='bg-white p-3 rounded-md' type="password" placeholder='Username' id="username" />
