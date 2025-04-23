@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { updateUserStart, updateUserSuccess, updateUserFailure } from "../redux/user/userSlice";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+} from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
-
 
 export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -10,32 +16,47 @@ export default function Profile() {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const dispatch = useDispatch();
 
-  const handleChange = (e)=>{
-setFormData({...formData, [e.target.id]: e.target.value})
-  }
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
-  const handleSubmit = async (e)=>{
-e.preventDefault();
-try {
-  dispatch(updateUserStart());
-  const res = await fetch(`/api/user/update/${currentUser.rest._id}`, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(formData)
-  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser.rest._id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
 
-  const data = await res.json();
-  if(data.success === false){
-    dispatch(updateUserFailure(data.message));
-    return;
-  }
-  
-  dispatch(updateUserSuccess(data));
-  setUpdateSuccess(true);
-} catch (error) {
-  dispatch(updateUserFailure(error.message))
-}
-  }
+  const handleDeleteUser = async (e) => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser.rest._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        return dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
 
   return (
     <div className="w-lg p-3 mx-auto">
@@ -66,26 +87,26 @@ try {
           id="email"
         />
         <input
-        onChange={handleChange}
+          onChange={handleChange}
           className="bg-white p-3 rounded-md"
           type="password"
           placeholder="Password"
           id="password"
         />
-        <button
-          className="bg-slate-700 p-3 text-white rounded-md cursor-pointer hover:opacity-95 uppercase "
-        >
-          {loading ? 'Loading..' : 'Update'}
+        <button className="bg-slate-700 p-3 text-white rounded-md cursor-pointer hover:opacity-95 uppercase ">
+          {loading ? "Loading.." : "Update"}
         </button>
       </form>
 
       <div className="flex justify-between mx-auto w-lg text-red-700 cursor-pointer mt-2">
-        <span>Delete account</span>
+        <span onClick={handleDeleteUser}>Delete account</span>
         <span>Sign Out</span>
       </div>
       <p className="mx-auto text-green-700 cursor-pointer">Show listings</p>
       <p className="text-red-700 mt-5">{error && error}</p>
-      <p className="text-green-700 mt-5">{updateSuccess && 'Update Successfull'}</p>
+      <p className="text-green-700 mt-5">
+        {updateSuccess && "Update Successfull"}
+      </p>
     </div>
   );
 }
