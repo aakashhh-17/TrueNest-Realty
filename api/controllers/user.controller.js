@@ -13,7 +13,8 @@ export const updateUser = async (req,res,next)=>{
             req.body.password = bcryptjs.hashSync(req.body.password, 10);
         }
 
-        const updatedUser = await User.findOneAndUpdate(req.user.id, {
+
+        const updatedUser = await User.findOneAndUpdate({_id: req.user.id}, {
             $set:{
                 username: req.body.username,
                 email: req.body.email,
@@ -24,7 +25,7 @@ export const updateUser = async (req,res,next)=>{
 
         const {password, ...rest} = updatedUser._doc;
 
-        res.status(200).json(rest);
+        res.status(200).json({rest});
     } catch (error) {
         next(error);
     }
