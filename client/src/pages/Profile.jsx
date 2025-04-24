@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import {Link} from 'react-router-dom'
 import {
   updateUserStart,
   updateUserSuccess,
@@ -114,6 +115,9 @@ try {
         <button className="bg-slate-700 p-3 text-white rounded-md cursor-pointer hover:opacity-95 uppercase ">
           {loading ? "Loading.." : "Update"}
         </button>
+        <Link className="bg-green-700 text-white p-3 rounded-md uppercase text-center hover:opacity-95" to={"/create-listing"}>
+        Create listing
+        </Link>
       </form>
 
       <div className="flex justify-between mx-auto w-lg text-red-700 cursor-pointer mt-2">
