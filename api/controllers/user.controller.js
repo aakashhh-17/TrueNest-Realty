@@ -48,8 +48,8 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
-export const getUserListings = async (req,res,next)=>{
-  if(req.user.id === req.params.id){
+export const getUserListings = async (req, res, next)=>{
+  if(req.user.id.toString() === req.params.id.toString()){
     try {
       const listings = await Listing.find({useRef: req.params.id});
       res.status(200).json(listings);

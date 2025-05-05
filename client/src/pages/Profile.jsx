@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import {Link} from 'react-router-dom'
+import { Link } from "react-router-dom";
 import {
   updateUserStart,
   updateUserSuccess,
@@ -10,7 +10,7 @@ import {
   deleteUserSuccess,
   signOutUserStart,
   signOutUserSuccess,
-  signOutUserFailure
+  signOutUserFailure,
 } from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 
@@ -18,6 +18,8 @@ export default function Profile() {
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showListingsError, setShowListingsError] = useState(false);
+  const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
@@ -62,20 +64,37 @@ export default function Profile() {
     }
   };
 
-  const handleUserSignout = async ()=>{
+  const handleUserSignout = async () => {
     dispatch(signOutUserStart());
-try {
-  const res = await fetch('/api/auth/signout')
-  const data = res.json();
-  if(data.success === false){
-    dispatch(signOutUserFailure(data.message));
-    return;
-  }
-  dispatch(signOutUserSuccess(data));
-} catch (error) {
-  dispatch(signOutUserFailure(data.message));
-}
-  }
+    try {
+      const res = await fetch("/api/auth/signout");
+      const data = res.json();
+      if (data.success === false) {
+        dispatch(signOutUserFailure(data.message));
+        return;
+      }
+      dispatch(signOutUserSuccess(data));
+    } catch (error) {
+      dispatch(signOutUserFailure(data.message));
+    }
+  };
+
+  const handleShowListings = async () => {
+    try {
+      setShowListingsError(false);
+      const res = await fetch(`/api/user/listings/${currentUser.rest._id}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setShowListingsError(true);
+        return;
+      }
+      setUserListings(data);
+      console.log(data);
+    } catch (error) {
+      setShowListingsError(true);
+    }
+  };
+
 
   return (
     <div className="w-lg p-3 mx-auto">
@@ -115,8 +134,11 @@ try {
         <button className="bg-slate-700 p-3 text-white rounded-md cursor-pointer hover:opacity-95 uppercase ">
           {loading ? "Loading.." : "Update"}
         </button>
-        <Link className="bg-green-700 text-white p-3 rounded-md uppercase text-center hover:opacity-95" to={"/create-listing"}>
-        Create listing
+        <Link
+          className="bg-green-700 text-white p-3 rounded-md uppercase text-center hover:opacity-95"
+          to={"/create-listing"}
+        >
+          Create listing
         </Link>
       </form>
 
@@ -124,11 +146,47 @@ try {
         <span onClick={handleDeleteUser}>Delete account</span>
         <span onClick={handleUserSignout}>Sign Out</span>
       </div>
-      <p className="mx-auto text-green-700 cursor-pointer">Show listings</p>
       <p className="text-red-700 mt-5">{error && error}</p>
       <p className="text-green-700 mt-5">
         {updateSuccess && "Update Successfull"}
       </p>
+      <button
+        onClick={handleShowListings}
+        className="mx-auto w-full text-green-700 cursor-pointer"
+      >
+        Show listings
+      </button>
+      <p>{showListingsError && "Error showing listings"}</p>
+
+      {userListings.length > 0 &&
+        userListings.map((listing) => (
+            <Link to={`/listing/${listing._id}`} >
+          <div key={listing._id} className="flex flex-row justify-between mt-5">
+            <div className="flex gap-x-2">
+              <img
+                className="w-15 h-10"
+                src="https://mbluxury1.s3.amazonaws.com/2024/02/26165331/Luxury-hotel-website-design.jpg"
+                alt=""
+              />
+              <p className="font-semibold hover:underline truncate">{listing.name}</p>
+            </div>
+            <div className="flex flex-col">
+              <button
+                type="button"
+                className="text-red-700 uppercase text-sm font-semibold"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                className="text-green-700 uppercase text-sm font-semibold"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+            </Link >
+        ))}
     </div>
   );
 }
