@@ -197,12 +197,12 @@ try {
               >
                 Delete
               </button>
+              <Link to={`/update-listing/${listing._id}`} >
               <button
                 type="button"
                 className="text-green-700 uppercase text-sm font-semibold cursor-pointer"
-              >
-                Edit
-              </button>
+                > Edit</button>
+                </Link>
             </div>
           </div>
 
