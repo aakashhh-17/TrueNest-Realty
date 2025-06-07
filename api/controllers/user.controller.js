@@ -1,11 +1,11 @@
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
-import  { errorHandler }  from "../utils/error.js";
+import { errorHandler } from "../utils/error.js";
 import bcryptjs from "bcryptjs";
 
-export const test = (req,res)=>{
-  res.json({ msg: "Api route is workinh"});
-}
+export const test = (req, res) => {
+  res.json({ msg: "Api route is workinh" });
+};
 
 export const updateUser = async (req, res, next) => {
   if (req.user.id !== req.params.id)
@@ -48,16 +48,28 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
-export const getUserListings = async (req, res, next)=>{
-  if(req.user.id.toString() === req.params.id.toString()){
+export const getUserListings = async (req, res, next) => {
+  if (req.user.id.toString() === req.params.id.toString()) {
     try {
-      const listings = await Listing.find({useRef: req.params.id});
+      const listings = await Listing.find({ useRef: req.params.id });
       res.status(200).json(listings);
     } catch (error) {
       next(error);
     }
+  } else {
+    return next(errorHandler(401, "Its not your account"));
   }
-  else{
-    return next(errorHandler(401, 'Its not your account'));
+};
+
+export const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return next(errorHandler(404, "User not found"));
+    }
+    const { password: pass, ...rest } = user._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
   }
-}
+};
