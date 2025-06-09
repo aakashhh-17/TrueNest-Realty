@@ -10,20 +10,21 @@ export default function Header() {
 
   const handleSubmit = (e)=>{
     e.preventDefault();
-    const urlParams = new URLSearchParams(window.location.search)
-    urlParams.set('SearchTerm', searchTerm);
+    const urlParams = new URLSearchParams(location.search)
+    urlParams.set('searchTerm', searchTerm);
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
+    // navigate(`/api/listing/get?${searchQuery}`)
 
   }
 
   useEffect(()=>{
     const urlParams = new URLSearchParams(location.search);
-    const searchTermFromUrl = urlParams.get('SearchTerm');
+    const searchTermFromUrl = urlParams.get('searchTerm');
     if(searchTermFromUrl){
       setSearchTerm(searchTermFromUrl);
     }
-  }, [window.location.search]);
+  }, [location.search]);
 
   return (
     <header className="bg-slate-200 shadow-md">
