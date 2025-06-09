@@ -15,43 +15,55 @@ export default function Search() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
-  console.log(listings);
-  
+  const [showMore, setShowMore] = useState(false);
+  // console.log(listings);
 
-
-  useEffect(()=>{
+  useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    const searchTermFromUrl = urlParams.get('searchTerm');
-    const typeFromUrl = urlParams.get('type');
-    const parkingFromUrl = urlParams.get('parking') ;
-    const furnishedFromUrl = urlParams.get('furnished');
-    const offerFromUrl = urlParams.get('offer');
-    const sortFromUrl = urlParams.get('sort') || "createdAt";
-    const orderFromUrl = urlParams.get('order') || "desc";
+    const searchTermFromUrl = urlParams.get("searchTerm");
+    const typeFromUrl = urlParams.get("type");
+    const parkingFromUrl = urlParams.get("parking");
+    const furnishedFromUrl = urlParams.get("furnished");
+    const offerFromUrl = urlParams.get("offer");
+    const sortFromUrl = urlParams.get("sort") || "createdAt";
+    const orderFromUrl = urlParams.get("order") || "desc";
 
-    if(searchTermFromUrl || typeFromUrl || parkingFromUrl || furnishedFromUrl || offerFromUrl || sortFromUrl || orderFromUrl){
+    if (
+      searchTermFromUrl ||
+      typeFromUrl ||
+      parkingFromUrl ||
+      furnishedFromUrl ||
+      offerFromUrl ||
+      sortFromUrl ||
+      orderFromUrl
+    ) {
       setSidebarData({
         searchTerm: searchTermFromUrl || "",
         type: typeFromUrl || "all",
         parking: parkingFromUrl === "true" ? true : false,
         furnished: furnishedFromUrl === "true" ? true : false,
         offer: offerFromUrl === "true" ? true : false,
-        sort: sortFromUrl || "createdAt", 
+        sort: sortFromUrl || "createdAt",
         order: orderFromUrl || "desc",
       });
     }
 
-    const fetchListings = async ()=>{
+    const fetchListings = async () => {
       setLoading(true);
       const searchQuery = urlParams.toString();
-      const res = await fetch(`/api/listing/get?${searchQuery}`)
+      const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
+      if (data.length > 8) {
+        setShowMore(true);
+      }else{
+        setShowMore(false)
+      }
       setListings(data);
       setLoading(false);
-    }
- 
+    };
+
     fetchListings();
-  }, [location.search])
+  }, [location.search]);
 
   const handleChange = (e) => {
     if (
@@ -85,18 +97,32 @@ export default function Search() {
     }
   };
 
-  const handleSubmit = (e)=>{
+  const handleSubmit = (e) => {
     e.preventDefault();
     const urlParams = new URLSearchParams();
-    urlParams.set('searchTerm', sidebarData.searchTerm) 
-    urlParams.set('type', sidebarData.type);  
-    urlParams.set('parking', sidebarData.parking);
-    urlParams.set('furnished', sidebarData.furnished);
-    urlParams.set('offer', sidebarData.offer);
-    urlParams.set('sort', sidebarData.sort);
-    urlParams.set('order', sidebarData.order);
+    urlParams.set("searchTerm", sidebarData.searchTerm);
+    urlParams.set("type", sidebarData.type);
+    urlParams.set("parking", sidebarData.parking);
+    urlParams.set("furnished", sidebarData.furnished);
+    urlParams.set("offer", sidebarData.offer);
+    urlParams.set("sort", sidebarData.sort);
+    urlParams.set("order", sidebarData.order);
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
+  };
+
+  const onShowMoreClick = async ()=>{
+    const numberOfListings = listings.length;
+    const startIndex = numberOfListings;
+    const urlParams = new URLSearchParams(location.search)
+    urlParams.set('startIndex', startIndex)
+    const searchQuery = urlParams.toString();
+    const res = await fetch(`/api/listing/get?${searchQuery}`)
+    const data = await res.json();
+    if(data.length < 9){
+      setShowMore(false);
+      setListings([...listings, ...data]);
+    }
   }
 
   return (
@@ -208,22 +234,27 @@ export default function Search() {
           Listing results
         </h1>
         <div className="p-7 flex flex-wrap gap-4 ">
-          {
-            !loading && listings.length === 0 && (
-              <p className="text-xl text-slate-700">No listings found!</p>
-            )
-          }
-          {
-            loading && (
-              <p className="text-xl text-slate-700 text-center w-full">Loading..</p>
-            )
-          }
-          {
-            !loading && listings && 
-            listings.map((listing)=>(
-              <ListingItem key={listing._id} listing={listing}/>
-            ))
-          }
+          {!loading && listings.length === 0 && (
+            <p className="text-xl text-slate-700">No listings found!</p>
+          )}
+          {loading && (
+            <p className="text-xl text-slate-700 text-center w-full">
+              Loading..
+            </p>
+          )}
+          {!loading &&
+            listings &&
+            listings.map((listing) => (
+              <ListingItem key={listing._id} listing={listing} />
+            ))}
+          {showMore && (
+            <button
+              className="text-green-700 p-7 hover:underline text-center w-full"
+              onClick={onShowMoreClick}
+            >
+              Show More
+            </button>
+          )}
         </div>
       </div>
     </div>
